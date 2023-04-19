@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import  ReactMarkdown  from "react-markdown";
+import Head from "next/head";
 
 
 export default function Home() {
@@ -52,12 +53,15 @@ export default function Home() {
   };
 
   return (
-    
+    <>
+      <Head>
+        <title>Calebot - Your friendly neighborhood AI</title>
+      </Head>
       <div className="flex flex-col h-screen">
         {/* Navbar */}
         <nav className="bg-white shadow w-full">
           <div className="px-4 h-14 flex justify-between items-center">
-            <div className="text-xl font-bold">Calebot</div>
+            <div classrName="text-xl font-bold">Calebot</div>
             <div>
               <input
                 type="password"
@@ -107,6 +111,8 @@ export default function Home() {
           </button>
         </div>
       </div>
-    
+
+      </> 
+            
   );
 }
