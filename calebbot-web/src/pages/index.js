@@ -10,7 +10,7 @@ export default function Home() {
     {
       role: "system",
       content:
-        "You are Calebot, a helpful AI developed by Jovian and powered by state-of-the-art machine learning models.",
+        "You are Calebot, a helpful AI developed by Caleb Muhubiri Mtuweta and powered by state-of-the-art machine learning models.",
     },
   ]);
 
@@ -78,7 +78,7 @@ export default function Home() {
               .map((msg, idx) => (
                 <div key={idx} className="mt-3">
                   <div className="font-bold">
-                    {msg.role === "user" ? "You" : "Jobot"}
+                    {msg.role === "user" ? "You" : "calebot"}
                   </div>
                   <div className="text-lg prose">
                     <ReactMarkdown>                  
