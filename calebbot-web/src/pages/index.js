@@ -2,10 +2,15 @@
 import { useState } from "react";
 import  ReactMarkdown  from "react-markdown";
 import Head from "next/head";
-
+import toast from "react-hot-toast";
+import Navbar  from "@/components/navbar";
+import { useUser } from "@supabase/auth-helpers-react";
+import { streamOpenAIResponse } from "@/utils/openai";
 
 export default function Home() {
-  const [apiKey, setApiKey] = useState("");
+
+  const user = useUser();
+  
   const [userMessage, setUserMessage] = useState("");
   const [messages, setMessages] = useState([
     {
@@ -15,8 +20,22 @@ export default function Home() {
     },
   ]);
 
-  const API_URL = "https://api.openai.com/v1/chat/completions";
+  const API_URL = "/api/chat";
   const sendRequest = async () => {
+    if (!userMessage) {
+      alert("Please enter a message before you hit send");
+    }
+    
+    if (!user) {  // comes from useUser();
+      toast.error("Please log in to send a message!");
+      return;
+    }
+
+   
+
+    const oldUserMessage = userMessage;
+    const oldMessages = messages;
+
     const updatedMessages = [
       ...messages,
       {
@@ -33,24 +52,36 @@ export default function Home() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
           messages: updatedMessages,
+          stream: true,
         }),
       });
 
-      const resJson = await response.json();
-      console.log(resJson);
+      if (response.status !== 200) {
+        throw new Error(
+          `OpenAI API returned an error. Please ensure you've provided the right API key. Check the "Console" or "Network" of your browser's developer tools for details.`
+        );
+      }
 
-      const updatedMessages2 = [...updatedMessages, resJson.choices[0].message];
-      setMessages(updatedMessages2);
+      streamOpenAIResponse(response, (newMessage) => {
+        const updatedMessages2 = [
+          ...updatedMessages,
+          { role: "assistant", content: newMessage },
+        ];
+
+        setMessages(updatedMessages2);
+      });
     } catch (error) {
-      console.error("error");
+      console.error("error", error);
+
+      setUserMessage(oldUserMessage);
+      setMessages(oldMessages);
       window.alert("Error:" + error.message);
     }
-  };
+};
 
   return (
     <>
@@ -59,21 +90,8 @@ export default function Home() {
       </Head>
       <div className="flex flex-col h-screen">
         {/* Navbar */}
-        <nav className="bg-white shadow w-full">
-          <div className="px-4 h-14 flex justify-between items-center">
-            <div classrName="text-xl font-bold">Calebot</div>
-            <div>
-              <input
-                type="password"
-                className="border rounded p-1"
-                placeholder="Enter API key.."
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-            </div>
-          </div>
-        </nav>
-
+        <Navbar />
+        
         {/* Message History */}
         <div className="flex-1 overflow-y-scroll">
           <div className="mx-auto w-full max-w-screen-md p-4 ">
